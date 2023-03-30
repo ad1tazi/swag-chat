@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwagChat</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        .input-text {
+            color: #007bff;
+        }
+        .output-text {
+            color: #28a745;
+        }
+    </style>
+    
+</head>
+<body>
+    <h1>SwagChat</h1>
+    <button onclick="startListening()">Start Listening</button>
+    <button id="stopListeningButton" onclick="stopListening(false)" disabled>Stop Listening</button>
+    <button onclick="clearConversation()">Clear Conversation</button>
+    <p id="transcript"></p>
+    <div id="dialogue"></div>
+    
+    <script>
+        let recognition;
+        let transcript = "";
+        let silenceTimeout;
+
+        let conversation = [];
+
+        function resetSilenceTimeout() {
+            if (recognition && recognition.grammars) {
+                clearTimeout(silenceTimeout);
+                silenceTimeout = setTimeout(function() {
+                    stopListening(true);
+                }, 5000);
+            }
+        }
+        
+        function updateStopListeningButtonState() {
+            const stopListeningButton = document.getElementById('stopListeningButton');
+            if (transcript.trim() === "") {
+                stopListeningButton.disabled = true;
+            } else {
+                stopListeningButton.disabled = false;
+            }
+        }
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = function(event) {
+                let interim_transcript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        transcript += event.results[i][0].transcript;
+                    } else {
+                        interim_transcript += event.results[i][0].transcript;
+                    }
+                }
+                document.getElementById('transcript').innerHTML = transcript + interim_transcript;
+                resetSilenceTimeout();
+                updateStopListeningButtonState();
+            };
+
+            recognition.onstart = function() {
+                resetSilenceTimeout();
+            };
+        }
+
+        function startListening() {
+            recognition.start();
+        }
+        
+        function addDialogue(inputText, outputText) {
+            let dialogueDiv = document.getElementById('dialogue');
+            let inputElement = document.createElement('p');
+            inputElement.className = 'input-text';
+            inputElement.textContent = 'User: ' + inputText;
+            dialogueDiv.appendChild(inputElement);
+
+            let outputElement = document.createElement('p');
+            outputElement.className = 'output-text';
+            outputElement.textContent = 'Bot: ' + outputText;
+            dialogueDiv.appendChild(outputElement);
+        }
+
+        function stopListening(byTimeout) {
+            recognition.stop();
+            if (!byTimeout) {
+                clearTimeout(silenceTimeout);
+            }
+
+            $.post("/generate", {text: transcript, conversation: JSON.stringify(conversation)}, function(data) {
+                let utterance = new SpeechSynthesisUtterance(data.generated_text);
+                window.speechSynthesis.speak(utterance);
+                addDialogue(transcript, data.generated_text);
+
+                transcript = "";
+                document.getElementById('transcript').innerHTML = transcript;
+
+                conversation = JSON.parse(data.updated_conversation);
+
+                updateStopListeningButtonState();
+            }, "json");
+        }
+
+        function clearConversation() {
+            conversation = [];
+            document.getElementById('dialogue').innerHTML = "";
+        }
+    </script>
+</body>
+</html>
