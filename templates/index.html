@@ -6,11 +6,15 @@
     <title>SwagChat</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
+        body {
+            background-color: #2A4347;
+            color: #ffffff;
+        }
         .input-text {
-            color: #007bff;
+            color: #ffffff;
         }
         .output-text {
-            color: #28a745;
+            color: #F0EAD6;
         }
     </style>
     
@@ -35,7 +39,7 @@
                 clearTimeout(silenceTimeout);
                 silenceTimeout = setTimeout(function() {
                     stopListening(true);
-                }, 5000);
+                }, 4000);
             }
         }
         
