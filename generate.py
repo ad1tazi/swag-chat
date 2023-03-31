@@ -1,7 +1,7 @@
 import openai
 import json
 
-openai.api_key = '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'
+openai.api_key = ''
 
 def generate(input_text, conversation):
     input_text = input_text.lower()
