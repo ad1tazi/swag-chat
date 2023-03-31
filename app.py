@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import json
 from generate import generate
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 @app.route('/')
 def index():
@@ -14,7 +14,11 @@ def generate_text():
     conversation = request.form.get('conversation', '[]')
 
     generated_text, updated_conversation = generate(user_text, conversation)
-    return jsonify({'generated_text': generated_text, 'updated_conversation': json.dumps(updated_conversation)})
+    
+    return jsonify({
+        'generated_text': generated_text,
+        'updated_conversation': json.dumps(updated_conversation)
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

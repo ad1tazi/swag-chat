@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwagChat</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <style>
-        body {
-            background-color: #2A4347;
-            color: #ffffff;
-        }
-        .input-text {
-            color: #ffffff;
-        }
-        .output-text {
-            color: #F0EAD6;
-        }
-    </style>
     
+    <title>SwagChat</title>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+
 </head>
 <body>
-    <h1>SwagChat</h1>
-    <button onclick="startListening()">Start Listening</button>
-    <button id="stopListeningButton" onclick="stopListening(false)" disabled>Stop Listening</button>
-    <button onclick="clearConversation()">Clear Conversation</button>
+    <h1 id="swag">SwagChat</h1>
+    <div id="buttons">
+        <button onclick="startListening()">Start Listening</button>
+        <button id="stopListeningButton" onclick="stopListening(false)" disabled>Stop Listening</button>
+        <button onclick="clearConversation()">Clear</button>
+    </div>
+
     <p id="transcript"></p>
     <div id="dialogue"></div>
     
@@ -52,6 +51,10 @@
             }
         }
 
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
             recognition.continuous = true;
@@ -67,6 +70,8 @@
                         interim_transcript += event.results[i][0].transcript;
                     }
                 }
+                interim_transcript = capitalizeFirstLetter(interim_transcript);
+                transcript = capitalizeFirstLetter(transcript);
                 document.getElementById('transcript').innerHTML = transcript + interim_transcript;
                 resetSilenceTimeout();
                 updateStopListeningButtonState();
